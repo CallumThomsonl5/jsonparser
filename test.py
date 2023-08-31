@@ -5,7 +5,7 @@ import json
 
 
 def main():
-    with open("complex.json") as f:
+    with open("testfiles/complex.json") as f:
         data = f.read()
 
     tokens = scan_tokens(data)

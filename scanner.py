@@ -71,7 +71,7 @@ def string(stream, pos, line):
 
         i+=1
 
-    return i, Tokens.String(value, line)
+    return value
 
 def number(stream, pos, line):
     n = ""
@@ -90,22 +90,18 @@ def number(stream, pos, line):
         i+=1
 
     if isFloating:
-        return i - 1, Tokens.Number(float(n), line)
+        return float(n)
     else:
-        return i - 1, Tokens.Number(int(n), line)
+        return int(n)
     
 def boolean(stream, pos, line):
-    i = pos
-
-    if stream[i] == "t":
-        assert stream[i: i+4] == "true"
-        token = Tokens.Bool(True, line)
-        return i+3, token
-    elif stream[i] == "f":
-        assert stream[i: i+5] == "false"
-        token = Tokens.Bool(False, line)
-        return i+4, token
-
+    if stream[pos: pos+4] == "true":
+        return True
+    elif stream[pos: pos+5] == "false":
+        return False
+    else:
+        raise Exception(f"bool scan error at line {line}")
+        
 def scan_tokens(stream):
     # take in json as string, return array of tokens
     tokens = []
@@ -120,14 +116,17 @@ def scan_tokens(stream):
         elif stream[i] == ":": tokens.append(Tokens.Colon(line))
         elif stream[i] == ",": tokens.append(Tokens.Comma(line))
         elif stream[i] == "\"":
-            i, token = string(stream, i, line)
-            tokens.append(token)
+            value = string(stream, i, line)
+            tokens.append(Tokens.String(value, line))
+            i += len(value) + 1
         elif ord(stream[i]) >= 49 and ord(stream[i]) <= 57:
-            i, token = number(stream, i, line)
-            tokens.append(token)
+            value = number(stream, i, line)
+            tokens.append(Tokens.Number(value, line))
+            i += len(str(value)) - 1
         elif stream[i:i+4] == "true" or stream[i:i+5] == "false":
-            i, token = boolean(stream, i, line)
-            tokens.append(token)
+            value = boolean(stream, i, line)
+            tokens.append(Tokens.Bool(value, line))
+            i += (3 if value else 4)
         elif stream[i] == "\n": line += 1
         elif stream[i] != " " and stream[i] != "\t":
             raise Exception(f"invalid token {stream[i]} on line {line}")

@@ -6,8 +6,8 @@ def parse_object(tokens):
     ret = {}
 
     if isinstance(tokens[0], Tokens.CloseCurlyBracket):
-            tokens.pop(0)
-            return {}
+        tokens.pop(0)
+        return {}
 
     while len(tokens) > 0:
         token = tokens.pop(0)
@@ -41,6 +41,12 @@ def parse_object(tokens):
 
 def parse_list(tokens):
     ret = []
+
+    # empty list
+    if isinstance(tokens[0], Tokens.CloseSquareBracket):
+        tokens.pop(0)
+        return []
+
     while len(tokens) > 0:
         token = tokens.pop(0)
         if isinstance(token, Tokens.OpenCurlyBracket):
@@ -49,8 +55,6 @@ def parse_list(tokens):
             value = parse_list(tokens)
         elif isinstance(token, Tokens.String) or isinstance(token, Tokens.Number) or isinstance(token, Tokens.Bool):
             value = token.value
-        elif isinstance(token, Tokens.CloseSquareBracket):
-            # empty list
             return ret
         else:
             print(f"error at token {token} on line {token.line}")
